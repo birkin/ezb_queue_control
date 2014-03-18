@@ -2,8 +2,8 @@
 
 import datetime, logging, os, random
 import requests
-from dev_code import dev_settings
-from dev_code.dev_utility_code import make_error_string
+from ezb_queue_control import common
+from ezb_queue_control.config import settings
 
 
 def setup_file_logger():
