@@ -4,22 +4,27 @@
     Always calls itself at end; all other tasks started by task_manager.py """
 
 import datetime, os, sys, time
-from dev_code import db_handler, dev_utility_code, ezb_logger, dev_settings
-from dev_code.tasks import db_updater, task_manager
-from redis import Redis
-from rq import Queue
+import redis, rq
+from ezb_queue_control.config import settings
+from ezb_queue_control.common import ezb_logger, utility_code
+
+# from dev_code import db_handler, dev_utility_code, ezb_logger, dev_settings
+# from dev_code.tasks import db_updater, task_manager
+# from redis import Redis
+# from rq import Queue
 
 
-queue_name = dev_settings.QUEUE_NAME
-q = Queue( queue_name, connection=Redis() )  # for check_for_new(); the only task which itself puts a new job on the queue
+q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )  # for check_for_new(); the only task which itself puts a new job on the queue
 
 
 def check_for_new():
     """ Checks for new requests.
-        If record found, updates Request table status. """
+        If record found, updates Request table status.
+        Updates db-logger. """
     try:
-        ( file_logger, db_logger, db_handler_instance ) = _setup_new_check()
-        dict_list = _run_sql_check( file_logger, db_handler_instance )
+        ( file_logger, db_logger ) = _setup_new_check()
+
+        new_data = _query_new( file_logger )
         _make_logger_message( file_logger, db_logger, dict_list )
         if dict_list:
             _update_status( dict_list=dict_list, r_id=dict_list[0][u'id'], file_logger=file_logger )
@@ -30,25 +35,22 @@ def check_for_new():
         file_logger.info( u'in dev_code.new_request_monitor.py.check_for_new(); done' )
         return
     except Exception as e:
-        file_logger = ezb_logger.setup_logger()
-        file_logger.error( u'in dev_code.new_request_monitor.py.check_for_new(); exception: %s' % unicode(repr(e)) )
-        detail_message = dev_utility_code.make_error_string()
-        file_logger.error( u'in dev_code.new_request_monitor.py.check_for_new(); detail_message: %s' % unicode(repr(detail_message)) )
-        raise Exception( u'Error checking for new record.' )  # TODO: consider commenting this out so new-checks don't stop
+        file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.FILE_LOG_LEVEL )
+        file_logger.error( u'new_request_monitor.check_for_new(); exception: %s' % unicode(repr(e)) )
+        detail_message = utility_code.make_error_string()
+        file_logger.error( u'in new_request_monitor.check_for_new(); detail_message: %s' % unicode(repr(detail_message)) )
+        raise Exception( u'Error checking for new record.' )  # TODO: consider commenting this out so new-checks don't stop processing
 
 
 def _setup_new_check():
     """ Sets up and returns logger & db-handler instances, and updates initial log-entries.
         Called by check_for_new() """
-    file_logger = ezb_logger.setup_logger()
-    db_logger = ezb_logger.setup_db_logger()
-    db_handler_instance = db_handler.get_db_handler( file_logger )
-    message = u'DevController session STARTING at %s; checking for request record...' % unicode(datetime.datetime.now())
-    file_logger.info( message );
+    file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.FILE_LOG_LEVEL )
+    db_logger = ezb_logger.DB_Logger( settings.DB_LOGGER_URL, settings.DB_LOGGER_USERNAME, settings.DB_LOGGER_PASSWORD )
+    message = u'QController session STARTING at %s; checking for request record...' % unicode(datetime.datetime.now())
+    file_logger.info( message )
     db_logger.update_log( message=message, message_importance=u'high' )
-    return ( file_logger, db_logger, db_handler_instance )
-
-
+    return ( file_logger, db_logger )
 
 
 def _make_logger_message( file_logger, db_logger,  dict_list ):
