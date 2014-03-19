@@ -10,14 +10,14 @@ import os
 # DB_PASSWORD = unicode( os.environ.get(u'ezb_ctl__DB_PASSWORD') )
 # DB_NAME = unicode( os.environ.get( u'ezb_ctl__DB_NAME') )
 
-## file-logger
-# FILE_LOG_DIR = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_DIR') )
-# FILE_LOG_LEVEL = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_LEVEL') )
+# file-logger
+FILE_LOG_DIR = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_DIR') )
+FILE_LOG_LEVEL = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_LEVEL') )
 
-## db-logger
-DB_LOG_URL = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL') )
-DB_LOG_KEY = unicode( os.environ.get(u'ezb_ctl__DB_LOG_KEY') )
-DB_LOGENTRY_MINIMUM_IMPORTANCE_LEVEL = unicode( os.environ.get(u'ezb_ctl__DB_LOGENTRY_MINIMUM_IMPORTANCE_LEVEL') )
+# ## db-logger
+# DB_LOG_URL = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL') )
+# DB_LOG_KEY = unicode( os.environ.get(u'ezb_ctl__DB_LOG_KEY') )
+# DB_LOGENTRY_MINIMUM_IMPORTANCE_LEVEL = unicode( os.environ.get(u'ezb_ctl__DB_LOGENTRY_MINIMUM_IMPORTANCE_LEVEL') )
 
 ## borrowdirect
 BD_API_URL = unicode( os.environ.get(u'ezb_ctl__BD_API_URL') )  # task_manager.py -- TODO: use this from caller_bd.py
