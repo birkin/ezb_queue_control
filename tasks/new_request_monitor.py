@@ -35,7 +35,7 @@ def check_for_new():
         file_logger.info( u'in dev_code.new_request_monitor.py.check_for_new(); done' )
         return
     except Exception as e:
-        file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.FILE_LOG_LEVEL )
+        file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.LOG_LEVEL )
         file_logger.error( u'new_request_monitor.check_for_new(); exception: %s' % unicode(repr(e)) )
         detail_message = utility_code.make_error_string()
         file_logger.error( u'in new_request_monitor.check_for_new(); detail_message: %s' % unicode(repr(detail_message)) )
@@ -45,9 +45,13 @@ def check_for_new():
 def _setup_new_check():
     """ Sets up and returns logger & db-handler instances, and updates initial log-entries.
         Called by check_for_new() """
-    file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.FILE_LOG_LEVEL )
-    db_logger = ezb_logger.DB_Logger( settings.DB_LOGGER_URL, settings.DB_LOGGER_USERNAME, settings.DB_LOGGER_PASSWORD )
-    message = u'QController session STARTING at %s; checking for request record...' % unicode(datetime.datetime.now())
+    file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.LOG_LEVEL )
+    db_logger = ezb_logger.DB_Logger(
+        settings.DB_LOG_URL,
+        settings.DB_LOG_USERNAME,
+        settings.DB_LOG_PASSWORD,
+        settings.LOG_LEVEL )
+    message = u'QController session STARTING at %s; checking for request record...' % unicode( datetime.datetime.now() )
     file_logger.info( message )
     db_logger.update_log( message=message, message_importance=u'high' )
     return ( file_logger, db_logger )

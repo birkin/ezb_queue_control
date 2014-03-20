@@ -26,48 +26,32 @@ def setup_db_logger():
 
 
 class DB_Logger(object):
+    """ Sends json to proxy-service that updates a db logging parts of easyborrow processing. """
 
-    def __init__( self, url, username, password ):
+    def __init__( self, url, username, password, log_level, file_logger=None ):
+        """ Holds state; user/pass for http-basic-auth. """
         self.url = url
         self.username = username
         self.password = password
+        self.log_level = log_level
+        self.file_logger = file_logger
 
-    def update_log( self, message, message_importance=u'low' ):
+    def update_log( self, message, message_importance ):
+        if _worthwhile_check( message_importance ) == False:
+            return
+        payload = { u'message': message }
+        r = requests.post( self.url, data=json.dumps(payload), auth=(self.username, self.password) )
+        print '- status_code, %s' % r.status_code
         return
 
-
-# class DB_Logger(object):
-#   """ Manages databaselogging.
-#       All database log entries, as well as failure attempts, also populate a file-log.
-#       self.session_identifier is populated early, and logger instance is passed to other classes. """
-
-#   def __init__( self, log_url=None, log_key=None, logentry_minimum_importance_level=None, session_identifier=None, file_logger=None ):
-#     """ Sets up basics. """
-#     self.file_logger = file_logger
-#     self.log_url = log_url if( log_url ) else dev_settings.DB_LOG_URL
-#     self.log_key = log_key if( log_key ) else dev_settings.DB_LOG_KEY
-#     self.logentry_minimum_importance_level = logentry_minimum_importance_level if( logentry_minimum_importance_level ) else dev_settings.DB_LOGENTRY_MINIMUM_IMPORTANCE_LEVEL
-#     self.session_identifier = session_identifier if( session_identifier ) else u'temp--%s--%s' % ( datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S'), random.randint(1000,9999) )  # used until request-number is obtained
-
-#   def update_log( self, message, message_importance=u'low' ):
-#     """ Updates database log, or file log on exception. """
-#     try:
-#       if self.file_logger:
-#         self.file_logger.info( u'message_importance is: %s' % message_importance )
-#       assert message_importance in [u'low', u'high'], u'BAD MESSAGE IMPORTANCE'
-#       update_log_flag = False
-#       if message_importance == u'high':
-#         update_log_flag = True
-#       elif ( message_importance == u'low' and self.logentry_minimum_importance_level == u'low' ):
-#         update_log_flag = True
-#       if update_log_flag:
-#         values = { u'message': message, u'identifier': self.session_identifier, u'key': self.log_key }
-#         r = requests.post( self.log_url, data=values, verify=False )
-#       # print u'- in ezb_logger.DB_Logger.update_log(); update_log returning.'
-#       return
-#     except:
-#       message = u'- in dev_code.ezb_logger.py; DB_Logger().update_log(); error detail: %s' % make_error_string()
-#       # print message
-#       if self.file_logger:
-#         self.file_logger.info( u'session, %s; message, %s' % (self.session_identifier, message) )
-#       return
+    def worthwhile_check( self, message_importance ):
+        """ Takes u'high/low' message_importance string.
+            Determines whether to log, given the message-importance and log-level.
+            Returns boolean.
+            Called by update_log(). """
+        var = False
+        if message_importance == u'high':
+            var = True
+        elif self.log_level == u'debug':
+            var = True
+        return var
