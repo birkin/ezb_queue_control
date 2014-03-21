@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import datetime, logging, os, random
+import datetime, json, logging, os, pprint, random
 import requests
 from ezb_queue_control import common
 # from ezb_queue_control.config import settings
@@ -21,15 +21,15 @@ def setup_file_logger( file_log_dir, file_log_level ):
 
 def setup_db_logger():
     """ Returns a db_logger_instance that'll post json to a db-logger webservice. """
-    db_logger = DB_Logger( settings.DB_LOGGER_URL, settings.DB_LOGGER_USERNAME, settings.DB_LOGGER_PASSWORD )
+    db_logger = DB_Logger( settings.DB_LOG_URL, settings.DB_LOG_USERNAME, settings.DB_LOG_PASSWORD )
     return db_logger
 
 
 class DB_Logger(object):
     """ Sends json to proxy-service that updates a db logging parts of easyborrow processing. """
 
-    def __init__( self, url, username, password, log_level, file_logger=None ):
-        """ Holds state; user/pass for http-basic-auth. """
+    def __init__( self, url, username, password, log_level, file_logger ):
+        """ Holds state; user/pass for basic-auth. """
         self.url = url
         self.username = username
         self.password = password
@@ -37,14 +37,20 @@ class DB_Logger(object):
         self.file_logger = file_logger
 
     def update_log( self, message, message_importance ):
-        if _worthwhile_check( message_importance ) == False:
+        """ Takes message and message_importance strings.
+            Sends message if it's important enough.
+            Returns status_code dict.
+            Called by various functions. """
+        self.file_logger.debug( u'in ezb_logger.update_log(); starting' )
+        if self._worthwhile_check( message_importance ) == False:
             return
         payload = { u'message': message }
         r = requests.post( self.url, data=json.dumps(payload), auth=(self.username, self.password) )
-        print '- status_code, %s' % r.status_code
+        status_dict = { u'update_log_status_code': r.status_code, u'message': message }
+        self.file_logger.debug( u'in ezb_logger.update_log(); status_dict, %s' % pprint.pformat(status_dict) )
         return
 
-    def worthwhile_check( self, message_importance ):
+    def _worthwhile_check( self, message_importance ):
         """ Takes u'high/low' message_importance string.
             Determines whether to log, given the message-importance and log-level.
             Returns boolean.

@@ -21,25 +21,17 @@ def check_for_new():
     """ Checks for new requests.
         If record found, updates Request table status.
         Updates db-logger. """
-    try:
-        ( file_logger, db_logger ) = _setup_new_check()
-
-        new_data = _query_new( file_logger )
-        _make_logger_message( file_logger, db_logger, dict_list )
-        if dict_list:
-            _update_status( dict_list=dict_list, r_id=dict_list[0][u'id'], file_logger=file_logger )
-            task_manager.determine_next_task( unicode(sys._getframe().f_code.co_name), data={u'found_data': dict_list[0], u'r_id': dict_list[0].get(u'id')}, logger=file_logger )
-        job = q.enqueue_call( func=u'dev_code.tasks.new_request_monitor.check_for_new', args=(), timeout=30 )  # always check for new
-        sleep_seconds = dev_settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in dev_code.new_request_monitor.py.check_for_new(); going to sleep' )
-        time.sleep( sleep_seconds )
-        file_logger.info( u'in dev_code.new_request_monitor.py.check_for_new(); done' )
-        return
-    except Exception as e:
-        file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.LOG_LEVEL )
-        file_logger.error( u'new_request_monitor.check_for_new(); exception: %s' % unicode(repr(e)) )
-        detail_message = utility_code.make_error_string()
-        file_logger.error( u'in new_request_monitor.check_for_new(); detail_message: %s' % unicode(repr(detail_message)) )
-        raise Exception( u'Error checking for new record.' )  # TODO: consider commenting this out so new-checks don't stop processing
+    ( file_logger, db_logger ) = _setup_new_check()
+    result_dict = _query_new( file_logger )
+    _make_logger_message( file_logger, db_logger, result_dict )
+    if result_dict:
+        _update_status( dict_list=dict_list, r_id=result_dict[u'id'], file_logger=file_logger )
+        task_manager.determine_next_task( unicode(sys._getframe().f_code.co_name), data={u'found_data': result_dict, u'r_id': result_dict.get(u'id')}, logger=file_logger )
+    job = q.enqueue_call( func=u'dev_code.tasks.new_request_monitor.check_for_new', args=(), timeout=30 )  # always check for new
+    sleep_seconds = dev_settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in dev_code.new_request_monitor.py.check_for_new(); going to sleep' )
+    time.sleep( sleep_seconds )
+    file_logger.info( u'in dev_code.new_request_monitor.py.check_for_new(); done' )
+    return
 
 
 def _setup_new_check():
@@ -50,11 +42,18 @@ def _setup_new_check():
         settings.DB_LOG_URL,
         settings.DB_LOG_USERNAME,
         settings.DB_LOG_PASSWORD,
-        settings.LOG_LEVEL )
+        settings.LOG_LEVEL,
+        file_logger )
     message = u'QController session STARTING at %s; checking for request record...' % unicode( datetime.datetime.now() )
     file_logger.info( message )
     db_logger.update_log( message=message, message_importance=u'high' )
     return ( file_logger, db_logger )
+
+
+def _query_new( file_logger ):
+    """ Sends request to db-proxy for json data.
+        Returns dict_list"""
+    pass
 
 
 def _make_logger_message( file_logger, db_logger,  dict_list ):
