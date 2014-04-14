@@ -53,7 +53,9 @@ def _setup_new_check():
 def _query_new( file_logger ):
     """ Sends request to db-proxy for json data.
         Returns dict_list"""
-    pass
+    r = requests.get( new_check_url, auth=(the_username, the_password) )
+    result_dict = r.json()
+    return result_dict
 
 
 def _make_logger_message( file_logger, db_logger,  dict_list ):
