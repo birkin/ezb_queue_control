@@ -1,0 +1,5 @@
+""" Add to project's env site-packages if needed. """
+
+
+# project enclosing directory -- allows references like "from ezb_queue_control import..."
+/path/to/enclosing_project_directory
