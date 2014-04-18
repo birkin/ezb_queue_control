@@ -8,8 +8,7 @@ FILE_LOG_DIR = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_DIR') )
 
 ## db-logger
 DB_LOG_URL = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL') )
-DB_LOG_USERNAME = unicode( os.environ.get(u'ezb_ctl__DB_LOG_USERNAME') )  # basic-auth
-DB_LOG_PASSWORD = unicode( os.environ.get(u'ezb_ctl__DB_LOG_PASSWORD') )  # basic-auth
+DB_LOG_URL_KEY = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL_KEY') )
 
 ## new-requests check
 NEW_CHECK_URL = unicode( os.environ.get(u'ezb_ctl__DB_NEW_REQUESTS_URL') )

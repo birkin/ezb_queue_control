@@ -4,7 +4,7 @@
     Always calls itself at end; all other tasks started by task_manager.py """
 
 import datetime, os, sys, time
-import redis, rq
+import redis, requests, rq
 from ezb_queue_control.config import settings
 from ezb_queue_control.common import ezb_logger, utility_code
 
@@ -20,7 +20,8 @@ q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )  # for check_for_n
 def check_for_new():
     """ Checks for new requests.
         If record found, updates Request table status.
-        Updates db-logger. """
+        Updates db-logger.
+        Called by start.py and this function itself. """
     ( file_logger, db_logger ) = _setup_new_check()
     result_dict = _query_new( file_logger )
     _make_logger_message( file_logger, db_logger, result_dict )
@@ -40,8 +41,7 @@ def _setup_new_check():
     file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.LOG_LEVEL )
     db_logger = ezb_logger.DB_Logger(
         settings.DB_LOG_URL,
-        settings.DB_LOG_USERNAME,
-        settings.DB_LOG_PASSWORD,
+        settings.DB_LOG_URL_KEY,
         settings.LOG_LEVEL,
         file_logger )
     message = u'QController session STARTING at %s; checking for request record...' % unicode( datetime.datetime.now() )
@@ -53,7 +53,7 @@ def _setup_new_check():
 def _query_new( file_logger ):
     """ Sends request to db-proxy for json data.
         Returns dict_list"""
-    r = requests.get( new_check_url, auth=(the_username, the_password) )
+    r = requests.get( settings.NEW_CHECK_URL, auth=(settings.NEW_CHECK_USERNAME, settings.NEW_CHECK_PASSWORD) )
     result_dict = r.json()
     return result_dict
 
