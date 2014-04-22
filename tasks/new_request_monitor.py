@@ -3,7 +3,7 @@
 """ Handles check-for-new-request issues.
     Always calls itself at end; all other tasks started by task_manager.py """
 
-import datetime, os, sys, time
+import datetime, os, pprint, sys, time
 import redis, requests, rq
 from ezb_queue_control.config import settings
 from ezb_queue_control.common import ezb_logger, utility_code
@@ -38,12 +38,13 @@ def check_for_new():
 def _setup_new_check():
     """ Sets up and returns logger & db-handler instances, and updates initial log-entries.
         Called by check_for_new() """
-    file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_DIR, settings.LOG_LEVEL )
+    file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_PATH, settings.LOG_LEVEL )
     db_logger = ezb_logger.DB_Logger(
         settings.DB_LOG_URL,
         settings.DB_LOG_URL_KEY,
         settings.LOG_LEVEL,
         file_logger )
+    file_logger.debug( u'in new_request_monitor._setup_new_check(); db_logger.log_id, %s' % db_logger.log_id )
     message = u'QController session STARTING at %s; checking for request record...' % unicode( datetime.datetime.now() )
     file_logger.info( message )
     db_logger.update_log( message=message, message_importance=u'high' )
@@ -54,6 +55,12 @@ def _query_new( file_logger ):
     """ Sends request to db-proxy for json data.
         Returns dict_list"""
     r = requests.get( settings.NEW_CHECK_URL, auth=(settings.NEW_CHECK_USERNAME, settings.NEW_CHECK_PASSWORD) )
+    status_dict = {  # temp, for debugging
+        u'settings.NEW_CHECK_URL': settings.NEW_CHECK_URL,
+        u'r.content': r.content.decode( u'utf-8' ),
+        u'r.status_code': r.status_code
+        }
+    file_logger.debug( u'in new_request_monitor._query_new(); status_dict, %s' % pprint.pformat(status_dict) )
     result_dict = r.json()
     return result_dict
 
