@@ -4,7 +4,7 @@ import os
 
 
 # file-logger
-FILE_LOG_DIR = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_DIR') )
+FILE_LOG_PATH = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_PATH') )
 
 ## db-logger
 DB_LOG_URL = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL') )
