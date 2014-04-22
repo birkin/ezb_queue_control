@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import datetime, json, logging, os, pprint, random
+import datetime, json, logging, os, pprint
 import requests
 from ezb_queue_control import common
-# from ezb_queue_control.config import settings
 
 
-def setup_file_logger( file_log_dir, file_log_level ):
+def setup_file_logger( file_log_path, file_log_level ):
     """ Returns a logger to write to a file.
         Called by caller_ill.py """
-    filename = u'%s/dev_ezb.log' % file_log_dir
     formatter = logging.Formatter( u'[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s' )
     logger = logging.getLogger( u'ezb_logger' )
     level_dict = { u'debug': logging.DEBUG, u'info':logging.INFO }
     logger.setLevel( level_dict[file_log_level] )
-    file_handler = logging.handlers.RotatingFileHandler( filename, maxBytes=(5*1024*1024), backupCount=1 )
+    file_handler = logging.handlers.RotatingFileHandler( file_log_path, maxBytes=(5*1024*1024), backupCount=2 )
     file_handler.setFormatter( formatter )
     logger.addHandler( file_handler )
     return logger
@@ -36,12 +34,15 @@ class DB_Logger(object):
         self.key = key
         self.log_level = log_level
         self.file_logger = file_logger
-        self.log_id = self.set_log_id( log_id )
+        self.log_id = log_id
+        self.set_log_id()
 
-    def set_log_id( self, log_id ):
+    def set_log_id( self ):
         """ Sets instance log_id if given one, otherwise creates a temp one. """
-        if log_id == None:
-            self.log_id = u'%s - %s' % ( unicode(datetime.datetime.now()), random.randint(1111, 9999) )
+        self.file_logger.debug( u'in ezb_logger.set_log_id(); self.log_id, %s' % self.log_id )
+        if self.log_id == None:
+            self.log_id = u'temp--%s' % unicode( datetime.datetime.now() ).replace( u' ', u'_' )
+        self.file_logger.debug( u'in ezb_logger.set_log_id(); self.log_id, %s' % self.log_id )
         return
 
     def update_log( self, message, message_importance ):
@@ -54,9 +55,16 @@ class DB_Logger(object):
             return
         payload = { u'message': message, u'identifier': self.log_id, u'key': self.key }
         r = requests.post( self.url, data=payload )
-        self.file_logger.debug( u'in ezb_logger.update_log(); r.content, %s' % r.content.decode(u'utf-8') )
-        status_dict = { u'update_log_status_code': r.status_code, u'message': message }
-        self.file_logger.debug( u'in ezb_logger.update_log(); status_dict, %s' % pprint.pformat(status_dict) )
+        # status_dict = {  # temp, for debug logging
+        #     u'r.status_code': r.status_code,
+        #     u'r.content': r.content.decode(u'utf-8'),
+        #     u'message': message,
+        #     u'identifier': self.log_id,
+        #     u'key': self.key,
+        #     u'message_importance': message_importance,
+        #     u'log_url': self.url,
+        #     u'payload': payload }
+        # self.file_logger.debug( u'in ezb_logger.update_log(); status_dict, %s' % pprint.pformat(status_dict) )
         return
 
     def _worthwhile_check( self, message_importance ):
