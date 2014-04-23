@@ -26,7 +26,7 @@ def check_for_new():
     result_dict = _query_new( file_logger )
     _make_logger_message( file_logger, db_logger, result_dict )
     if result_dict:
-        _update_status( dict_list=dict_list, r_id=result_dict[u'id'], file_logger=file_logger )
+        _update_status( result_dict=result_dict, file_logger=file_logger )
         task_manager.determine_next_task( unicode(sys._getframe().f_code.co_name), data={u'found_data': result_dict, u'r_id': result_dict.get(u'id')}, logger=file_logger )
     job = q.enqueue_call( func=u'dev_code.tasks.new_request_monitor.check_for_new', args=(), timeout=30 )  # always check for new
     sleep_seconds = dev_settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in dev_code.new_request_monitor.py.check_for_new(); going to sleep' )
@@ -53,7 +53,7 @@ def _setup_new_check():
 
 def _query_new( file_logger ):
     """ Sends request to db-proxy for json data.
-        Returns dict_list"""
+        Returns empty or populated result-dict. """
     r = requests.get( settings.NEW_CHECK_URL, auth=(settings.NEW_CHECK_USERNAME, settings.NEW_CHECK_PASSWORD) )
     status_dict = {  # temp, for debugging
         u'settings.NEW_CHECK_URL': settings.NEW_CHECK_URL,
@@ -61,28 +61,29 @@ def _query_new( file_logger ):
         u'r.status_code': r.status_code
         }
     file_logger.debug( u'in new_request_monitor._query_new(); status_dict, %s' % pprint.pformat(status_dict) )
-    result_dict = r.json()
+    json_dict = r.json()
+    result_dict = json_dict[u'result']
     return result_dict
 
 
-def _make_logger_message( file_logger, db_logger,  dict_list ):
+def _make_logger_message( file_logger, db_logger,  result_dict ):
     """ Sets logging message on initial record check.
         Called by check_for_new() """
-    if len(dict_list) == 0:
+    if len(result_dict) == 0:
         message = u'in dev_code.new_request_monitor.py.check_for_new(); no new request found; quitting'
     else:
-        r_id = dict_list[0][u'id']
-        message = u'in dev_code.new_request_monitor.py.check_for_new(); r_id %s; record found; data: %s' % ( r_id, dict_list )
+        r_id = result_dict[u'db_id']
+        message = u'in dev_code.new_request_monitor.py.check_for_new(); r_id %s; record found; data: %s' % ( r_id, result_dict )
     file_logger.info( message )
     db_logger.update_log( message, message_importance=u'high' )
     return
 
 
-def _update_status( dict_list, r_id, file_logger ):
+def _update_status( result_dict, file_logger ):
     """ Updates request table status.
         Not done as separate task to minimize chance of double-processing request. """
     data = {
-        u'db_id': dict_list[0][u'id'],
+        u'db_id': result_dict[u'db_id'],
         u'status': u'in_process' }
     db_updater.update_request_status( data=data, file_logger=file_logger )
     return
