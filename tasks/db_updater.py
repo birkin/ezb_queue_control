@@ -3,8 +3,8 @@
 """ Handles updates to Request and History tables. """
 
 import sys
-from dev_code import db_handler, ezb_logger
-from dev_code.tasks import task_manager
+# from ezb_queue_control.common import ezb_logger
+from ezb_queue_control.tasks import task_manager
 
 
 def update_request_status( data=None, file_logger=None ):

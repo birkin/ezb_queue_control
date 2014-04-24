@@ -7,6 +7,7 @@ import datetime, os, pprint, sys, time
 import redis, requests, rq
 from ezb_queue_control.config import settings
 from ezb_queue_control.common import ezb_logger, utility_code
+from ezb_queue_control.tasks import db_updater, task_manager
 
 # from dev_code import db_handler, dev_utility_code, ezb_logger, dev_settings
 # from dev_code.tasks import db_updater, task_manager
@@ -29,9 +30,9 @@ def check_for_new():
         _update_status( result_dict=result_dict, file_logger=file_logger )
         task_manager.determine_next_task( unicode(sys._getframe().f_code.co_name), data={u'found_data': result_dict, u'r_id': result_dict.get(u'id')}, logger=file_logger )
     job = q.enqueue_call( func=u'dev_code.tasks.new_request_monitor.check_for_new', args=(), timeout=30 )  # always check for new
-    sleep_seconds = dev_settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in dev_code.new_request_monitor.py.check_for_new(); going to sleep' )
+    sleep_seconds = dev_settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in new_request_monitor.check_for_new(); going to sleep' )
     time.sleep( sleep_seconds )
-    file_logger.info( u'in dev_code.new_request_monitor.py.check_for_new(); done' )
+    file_logger.info( u'in new_request_monitor.check_for_new(); done' )
     return
 
 
@@ -70,10 +71,10 @@ def _make_logger_message( file_logger, db_logger,  result_dict ):
     """ Sets logging message on initial record check.
         Called by check_for_new() """
     if len(result_dict) == 0:
-        message = u'in dev_code.new_request_monitor.py.check_for_new(); no new request found; quitting'
+        message = u'in new_request_monitor.py.check_for_new(); no new request found; quitting'
     else:
         r_id = result_dict[u'db_id']
-        message = u'in dev_code.new_request_monitor.py.check_for_new(); r_id %s; record found; data: %s' % ( r_id, result_dict )
+        message = u'in new_request_monitor.py.check_for_new(); r_id %s; record found; data: %s' % ( r_id, result_dict )
     file_logger.info( message )
     db_logger.update_log( message, message_importance=u'high' )
     return
