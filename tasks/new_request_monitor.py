@@ -29,8 +29,8 @@ def check_for_new():
     if result_dict:
         _update_status( result_dict=result_dict, file_logger=file_logger )
         task_manager.determine_next_task( unicode(sys._getframe().f_code.co_name), data={u'found_data': result_dict, u'r_id': result_dict.get(u'id')}, logger=file_logger )
-    job = q.enqueue_call( func=u'dev_code.tasks.new_request_monitor.check_for_new', args=(), timeout=30 )  # always check for new
-    sleep_seconds = dev_settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in new_request_monitor.check_for_new(); going to sleep' )
+    job = q.enqueue_call( func=u'ezb_queue_control.tasks.new_request_monitor.check_for_new', args=(), timeout=30 )  # always check for new
+    sleep_seconds = settings.NEW_CHECK_FREQUENCY; file_logger.debug( u'in new_request_monitor.check_for_new(); going to sleep' )
     time.sleep( sleep_seconds )
     file_logger.info( u'in new_request_monitor.check_for_new(); done' )
     return

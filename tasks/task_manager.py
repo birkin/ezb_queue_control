@@ -3,15 +3,15 @@
 """ Handles next-task issues. """
 
 import json, os, sys
+import redis, rq
 from types import InstanceType, NoneType
-from dev_code import ezb_logger, dev_settings, dev_utility_code
-# import redis
-from redis import Redis
-from rq import Queue
+from ezb_queue_control.config import settings
+# from dev_code import ezb_logger, dev_settings, dev_utility_code
+# from redis import Redis
+# from rq import Queue
 
 
-queue_name = dev_settings.QUEUE_NAME
-q = Queue( queue_name, connection=Redis() )
+q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )
 
 
 ## determine_next_task() ##
