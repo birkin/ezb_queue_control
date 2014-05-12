@@ -21,7 +21,7 @@ def update_history_note( data=None ):
         Updates history table note field.
         Called _as_ task, so no file_logger is passed in. """
     ( file_logger, db_handler_instance ) = _setup_logger_and_dbhandler()
-    file_logger.debug( u'in dev_code.db_updater.update_history_note(); r_id %s; updating history note' % data[u'r_id'] )
+    file_logger.debug( u'in tasks.db_updater.update_history_note(); r_id %s; updating history note' % data[u'r_id'] )
     assert u'history_note_text' in data.keys(), Exception( u'no history_note_text key' )
     #TODO
     return

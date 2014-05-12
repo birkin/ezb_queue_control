@@ -9,11 +9,6 @@ from ezb_queue_control.config import settings
 from ezb_queue_control.common import ezb_logger, utility_code
 from ezb_queue_control.tasks import db_updater, task_manager
 
-# from dev_code import db_handler, dev_utility_code, ezb_logger, dev_settings
-# from dev_code.tasks import db_updater, task_manager
-# from redis import Redis
-# from rq import Queue
-
 
 q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )  # for check_for_new(); the only task which itself puts a new job on the queue
 

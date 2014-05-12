@@ -5,8 +5,9 @@
 
 import json, os, sys
 import requests
-from dev_code import ezb_logger, dev_settings
-from dev_code.tasks import task_manager
+from ezb_queue_control.common import ezb_logger
+from ezb_queue_control.config import settings
+from ezb_queue_control.tasks import task_manager
 
 
 ## prepare request ##
@@ -21,7 +22,7 @@ def prepare_bd_request_data( data ):
     if search_type == u'isbn':
         caller_data[u'isbn'], caller_data[u'good_to_go'] = data[u'found_data'][u'isbn'], True
     else:  # u'string'
-        caller_data = _make_search_strings( data=data, caller_data=caller_data, openurl_parser_url=dev_settings.OPENURL_PARSER_URL, file_logger=file_logger )
+        caller_data = _make_search_strings( data=data, caller_data=caller_data, openurl_parser_url=settings.OPENURL_PARSER_URL, file_logger=file_logger )
     file_logger.info( u'in caller_bd.prepare_bd_request_data(); r_id, %s; caller_data, %s' % (data[u'r_id'], caller_data) )
     task_manager.determine_next_task( unicode(sys._getframe().f_code.co_name), data={u'bd_caller_data':caller_data, u'flow': data[u'flow'], u'found_data': data[u'found_data'], u'r_id': data[u'r_id']}, logger=file_logger )
     return
@@ -32,9 +33,9 @@ def _make_initial_data_dict( data ):
         Called by prepare_bd_request_data()"""
     caller_data_dict = {
         u'good_to_go': False,  # not really sent to borrowdirect tunneler -- just a processing flag
-        u'api_authorization_code': dev_settings.BD_API_AUTHORIZATION_CODE,
-        u'api_identity': dev_settings.BD_API_IDENTITY,
-        u'university': dev_settings.BD_API_UNIVERSITY,
+        u'api_authorization_code': settings.BD_API_AUTHORIZATION_CODE,
+        u'api_identity': settings.BD_API_IDENTITY,
+        u'university': settings.BD_API_UNIVERSITY,
         u'user_barcode': data[u'found_data'][u'barcode'],
         u'command': u'request',
         }

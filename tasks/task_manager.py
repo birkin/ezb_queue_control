@@ -6,9 +6,7 @@ import json, os, sys
 import redis, rq
 from types import InstanceType, NoneType
 from ezb_queue_control.config import settings
-# from dev_code import ezb_logger, dev_settings, dev_utility_code
-# from redis import Redis
-# from rq import Queue
+from ezb_queue_control.common import utility_code
 
 
 q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )
@@ -29,43 +27,43 @@ def determine_next_task( current_task, data=None, logger=None ):
             assert sorted( data.keys() ) == [ u'found_data', u'r_id' ], sorted( data.keys() )
             if len( data['found_data'] ) > 0:
                 data[u'history_note_text'] = u'Processing started'
-                next_task = u'dev_code.tasks.db_updater.update_history_note'
+                next_task = u'ezb_queue_control.tasks.db_updater.update_history_note'
 
         elif current_task == u'update_history_note':  # db_updater.py
             assert u'history_note_text' in data.keys(), u'expected key history_note_text not found'
             if data[u'history_note_text'] == u'Processing started':  # new_request_monitor.py
                 del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'found_data', u'r_id' ]
-                next_task = u'dev_code.tasks.task_manager.determine_flow'
+                next_task = u'ezb_queue_control.tasks.task_manager.determine_flow'
             elif data[u'history_note_text'] == u'no_valid_bd_string':  # caller_bd.prepare_bd_request_data() failed on string-search
                 del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'flow', u'found_data', u'r_id' ]
                 position = data[u'flow'].index( u'bd' )
                 next_in_flow = data[u'flow'][position + 1]
                 if next_in_flow == u'illiad':
-                    next_task = u'dev_code.tasks.caller_ill.prepare_illiad_request_data'
+                    next_task = u'ezb_queue_control.tasks.caller_ill.prepare_illiad_request_data'
 
         elif current_task == u'determine_flow':  # task_manager.py
             assert sorted( data.keys() ) == [u'flow', u'found_data', u'r_id'], sorted( data.keys() )
             if data[u'flow'][0] == u'bd':
-                next_task = u'dev_code.tasks.caller_bd.prepare_bd_request_data'
+                next_task = u'ezb_queue_control.tasks.caller_bd.prepare_bd_request_data'
             elif data[u'flow'][0] == u'illiad':
-                next_task = u'dev_code.tasks.tunneler_runners.run_illiad'
+                next_task = u'ezb_queue_control.tasks.tunneler_runners.run_illiad'
             else:
-                next_task = u'dev_code.tasks.tunneler_runners.run_inrhode'  # not possible as of 2014-01, but determine_flow() can change based on policy.
+                next_task = u'ezb_queue_control.tasks.tunneler_runners.run_inrhode'  # not possible as of 2014-01, but determine_flow() can change based on policy.
 
         elif current_task == u'prepare_bd_request_data':  # caller_bd.py
             assert sorted( data.keys() ) == [ u'bd_caller_data', u'flow', u'found_data', u'r_id' ], sorted( data.keys() )
             if data[u'bd_caller_data'][u'good_to_go'] == True:
                 del( data[u'bd_caller_data']['good_to_go'] )  # now bd_caller_data is exactly what the api needs
-                data[u'bd_tunneler_url'] = dev_settings.BD_API_URL  # TODO: this is dumb; request_bd_item() should grab this
-                next_task = u'dev_code.tasks.caller_bd.request_bd_item'
+                data[u'bd_tunneler_url'] = settings.BD_API_URL  # TODO: this is dumb; request_bd_item() should grab this
+                next_task = u'ezb_queue_control.tasks.caller_bd.request_bd_item'
             else:  # caller_bd.prepare_bd_request_data() failed on string-search
                 del( data[u'bd_caller_data'] )
                 data[u'history_note_text'] = u'no_valid_bd_string'
-                next_task = u'dev_code.tasks.caller_bd.update_history_note'
+                next_task = u'ezb_queue_control.tasks.caller_bd.update_history_note'
 
         elif current_task == u'request_bd_item':  # caller_bd.py
             assert sorted( data.keys() ) == [ u'bd_tunneler_response', u'flow', u'found_data', u'r_id' ], sorted( data.keys() )
-            next_task = u'dev_code.tasks.db_updater.update_bd_history_status'
+            next_task = u'ezb_queue_control.tasks.db_updater.update_bd_history_status'
 
         elif current_task == u'update_bd_history_status':  # db_updater.py
             assert sorted( data.keys() ) == [ u'bd_tunneler_response', u'flow', u'found_data', u'r_id' ], sorted( data.keys() )
@@ -74,14 +72,14 @@ def determine_next_task( current_task, data=None, logger=None ):
                 next_in_flow = data[u'flow'][position + 1]
                 if next_in_flow == u'illiad':
                     del( data['bd_tunneler_response'] )
-                    next_task = u'dev_code.tasks.caller_ill.prepare_illiad_request_data'
+                    next_task = u'ezb_queue_control.tasks.caller_ill.prepare_illiad_request_data'
             # if len( data[u'bd_tunneler_response'][u'bd_confirmation_code'] ) > 0:  # success!
             #     data[u'request_status'] = u'processed'
-            #     next_task = u'dev_code.tasks.update_request_status' --> then email work
+            #     next_task = u'ezb_queue_control.tasks.update_request_status' --> then email work
 
         elif current_task == u'prepare_illiad_request_data':  # caller_ill.py
             assert sorted( data.keys() ) == [ u'found_data', u'illiad_caller_data', u'r_id' ], sorted( data.keys() )
-            next_task = u'dev_code.tasks.caller_ill.submit_illiad_request'
+            next_task = u'ezb_queue_control.tasks.caller_ill.submit_illiad_request'
 
         # elif current_task == u'submit_illiad_request':  # caller_ill.py
         #     assert sorted( data.keys() ) == [ u'found_data', u'illiad_caller_data', u'illiad_response_data', u'r_id' ], sorted( data.keys() )
@@ -96,8 +94,8 @@ def determine_next_task( current_task, data=None, logger=None ):
         return
 
     except Exception as e:
-        detail_message = dev_utility_code.make_error_string()
-        logger.error( u'in dev_code.task_manager.determine_next_task(); detail_message: %s' % unicode(repr(detail_message)) )
+        detail_message = utility_code.make_error_string()
+        logger.error( u'in tasks.task_manager.determine_next_task(); detail_message: %s' % unicode(repr(detail_message)) )
         sys.exit()
 
 

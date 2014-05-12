@@ -5,8 +5,8 @@
 
 import json, os, sys
 import requests
-from dev_code import ezb_logger
-from dev_code.tasks import task_manager
+from ezb_queue_control.common import ezb_logger
+from ezb_queue_control.tasks import task_manager
 
 
 ## prepare request ##
@@ -110,7 +110,7 @@ def _handle_illiad_submission_error( e, file_logger, db_logger, r_id ):
     message=u'- in caller_ill._handle_illiad_submission_error(); r_id, %s; exception: %s' % ( r_id, unicode(repr(e)) )
     file_logger.error( message )
     db_logger.update_log( message=message, message_importance=u'high' )
-    job = q.enqueue_call( func=u'dev_code.tasks.emailer.email_illid_error', args=(data,), timeout=30 )
+    job = q.enqueue_call( func=u'ezb_queue_control.tasks.emailer.email_illid_error', args=(data,), timeout=30 )
     illiad_response_dict = { u'error_message': message }
     raise Exception( u'Error submitting illiad request. Error logged and admin emailed.' )
     return

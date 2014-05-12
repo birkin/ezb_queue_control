@@ -3,7 +3,7 @@
 # NOTE: Assumes rq worker(s) started from ezborrow_python_code directory.
 
 WORKER_NAME=ezb_worker_$RANDOM
-LOG_FILENAME=$ezb_ctl_dev__LOG_DIR/$WORKER_NAME.log
+LOG_FILENAME=$ezb_ctl__WORKER_LOG_DIR/$WORKER_NAME.log
 
 echo "worker name: " $WORKER_NAME
 echo "log filename: " $LOG_FILENAME
