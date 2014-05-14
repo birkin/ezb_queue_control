@@ -3,7 +3,8 @@
 """ Handles updates to Request and History tables. """
 
 import sys
-# from ezb_queue_control.common import ezb_logger
+from ezb_queue_control.common import ezb_logger
+from ezb_queue_control.config import settings
 from ezb_queue_control.tasks import task_manager
 
 
@@ -13,6 +14,7 @@ def update_request_status( data=None, file_logger=None ):
         Called _by_ task, so file_logger is passed in. """
     #TODO - implement
     #TODO - if not a task, move function out of tasks
+    1/0
     return
 
 
@@ -60,6 +62,6 @@ def _setup_logger_and_dbhandler():
         Returns file_logger and db_handler_instance.
         Called by task update_history_note(), and task update_bd_history_status() """
     #TODO- this will no longer work with non-sql code; fix.
-    file_logger = ezb_logger.setup_logger()
+    file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_PATH, settings.LOG_LEVEL )
     db_handler_instance = db_handler.get_db_handler( file_logger )
     return ( file_logger, db_handler_instance )

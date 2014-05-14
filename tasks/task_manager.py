@@ -2,11 +2,11 @@
 
 """ Handles next-task issues. """
 
-import json, os, sys
+import json, logging, os, sys
 import redis, rq
 from types import InstanceType, NoneType
 from ezb_queue_control.config import settings
-from ezb_queue_control.common import utility_code
+from ezb_queue_control.common import ezb_logger, utility_code
 
 
 q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )
@@ -23,11 +23,11 @@ def determine_next_task( current_task, data=None, logger=None ):
         next_task = None
         logger.debug( u'in tasks.task_manager.determine_next_task(); current_task: %s' % current_task )
 
-        if current_task == u'check_for_new':  # new_request_monitor.py
-            assert sorted( data.keys() ) == [ u'found_data', u'r_id' ], sorted( data.keys() )
-            if len( data['found_data'] ) > 0:
-                data[u'history_note_text'] = u'Processing started'
-                next_task = u'ezb_queue_control.tasks.db_updater.update_history_note'
+        # if current_task == u'check_for_new':  # new_request_monitor.py
+        #     assert sorted( data.keys() ) == [ u'found_data', u'r_id' ], sorted( data.keys() )
+        #     if len( data['found_data'] ) > 0:
+        #         data[u'history_note_text'] = u'Processing started'
+        #         next_task = u'ezb_queue_control.tasks.db_updater.update_history_note'
 
         elif current_task == u'update_history_note':  # db_updater.py
             assert u'history_note_text' in data.keys(), u'expected key history_note_text not found'
@@ -104,7 +104,8 @@ def _check_params( current_task, data, logger ):
         Called by determine_next_task(). """
     assert type( current_task ) == unicode, Exception( u'current_task must be unicode; it is: %s' % type(current_task) )
     assert type( data ) in [ dict, NoneType ], Exception( u'data of incorrect type; it is: %s' % type(data) )
-    assert type( logger ) == InstanceType, Exception( u'logger of incorrect type; it is: %s' % type(logger) )
+    assert type( logger ) == logging.Logger, Exception( u'logger of incorrect type; it is: %s' % type(logger) )
+    # assert type( logger ) == InstanceType, Exception( u'logger of incorrect type; it is: %s' % type(logger) )
     return True
 
 
