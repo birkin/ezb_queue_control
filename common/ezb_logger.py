@@ -18,10 +18,10 @@ def setup_file_logger( file_log_path, file_log_level ):
     return logger
 
 
-def setup_db_logger():
+def setup_db_logger( DB_LOG_URL, DB_LOG_URL_KEY, LOG_LEVEL, file_logger ):
     """ Returns a db_logger_instance that'll post json to a db-logger webservice.
         Called by caller_ill.py """
-    db_logger = DB_Logger( settings.DB_LOG_URL, settings.DB_LOG_URL_KEY )
+    db_logger = DB_Logger( DB_LOG_URL, DB_LOG_URL_KEY, LOG_LEVEL, file_logger )
     return db_logger
 
 
