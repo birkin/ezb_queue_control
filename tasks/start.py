@@ -13,5 +13,5 @@ from ezb_queue_control.config import settings
 q = rq.Queue( settings.QUEUE_NAME, connection=redis.Redis() )
 
 job = q.enqueue_call(
-  func=u'ezb_queue_control.tasks.new_request_monitor.check_for_new',
+  func=u'ezb_queue_control.tasks.new_request_monitor.run_check_for_new',
   kwargs = {} )

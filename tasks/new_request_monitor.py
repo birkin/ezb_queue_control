@@ -24,19 +24,20 @@ class Monitor( object ):
             Called by cron, or, for developement, tasks/start.py """
         self.file_logger.debug( u'in new_request_monitor.check_for_new(); starting.' )
         self._log_start_messages()
-        result_dicts = self._query_new( file_logger )
-        db_updater.update_check_result( result_dicts, file_logger )
+        result_dicts = self._query_new()
+        self._log_check_result( result_dicts )
+        db_updater.update_check_result( result_dicts, self.file_logger )
         return result_dicts
 
     def _log_start_messages( self ):
-        """ Sets up and returns logger & db-handler instances, and updates initial log-entries.
+        """ Creates initial db-log-entry.
             Called by check_for_new() """
         db_log_message = u'QController session STARTING at %s; checking for request record...' % unicode( datetime.datetime.now() )
         self.db_logger.update_log( message=db_log_message, message_importance=u'high' )
         self.file_logger.info( db_log_message )
         return
 
-    def _query_new( self, file_logger ):
+    def _query_new( self ):
         """ Sends request to db-proxy for json data.
             Returns empty or populated list of result-dicts. """
         r = requests.get( settings.NEW_CHECK_URL, auth=(settings.NEW_CHECK_USERNAME, settings.NEW_CHECK_PASSWORD) )
@@ -48,6 +49,17 @@ class Monitor( object ):
         json_dict = r.json()
         result_dicts = json_dict[u'result']
         return result_dicts
+
+    def _log_check_result( self, result_dicts ):
+        """ Updates db-log with check result.
+            Called by check_for_new() """
+        if len(result_dicts) == 0:
+            message = u'no new request found; quitting'
+        else:
+            message = u'%s new requests found' % len(result_dicts)
+        self.file_logger.info( u'in new_request_monitor._log_check_result(); %s' % message )
+        self.db_logger.update_log( message=message, message_importance=u'high' )
+        return
 
     # end class Monitor()
 

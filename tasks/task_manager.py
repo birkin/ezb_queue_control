@@ -29,7 +29,7 @@ def determine_next_task( current_task, data=None, logger=None ):
         #         data[u'history_note_text'] = u'Processing started'
         #         next_task = u'ezb_queue_control.tasks.db_updater.update_history_note'
 
-        elif current_task == u'update_history_note':  # db_updater.py
+        if current_task == u'update_history_note':  # db_updater.py
             assert u'history_note_text' in data.keys(), u'expected key history_note_text not found'
             if data[u'history_note_text'] == u'Processing started':  # new_request_monitor.py
                 del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'found_data', u'r_id' ]
