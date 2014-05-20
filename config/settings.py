@@ -10,10 +10,11 @@ FILE_LOG_PATH = unicode( os.environ.get(u'ezb_ctl__FILE_LOG_PATH') )
 DB_LOG_URL = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL') )
 DB_LOG_URL_KEY = unicode( os.environ.get(u'ezb_ctl__DB_LOG_URL_KEY') )
 
-## new-requests check
+## db proxy
 NEW_CHECK_URL = unicode( os.environ.get(u'ezb_ctl__DB_NEW_REQUESTS_URL') )
-NEW_CHECK_USERNAME = unicode( os.environ.get(u'ezb_ctl__DB_NEW_REQUESTS_USERNAME') )
-NEW_CHECK_PASSWORD = unicode( os.environ.get(u'ezb_ctl__DB_NEW_REQUESTS_PASSWORD') )
+UPDATE_STATUS_URL = unicode( os.environ.get(u'ezb_ctl__DB_UPDATE_STATUS_URL') )
+DB_PRX_USERNAME = unicode( os.environ.get(u'ezb_ctl__DB_AUTH_USERNAME') )
+DB_PRX_PASSWORD = unicode( os.environ.get(u'ezb_ctl__DB_AUTH_PASSWORD') )
 
 ## both loggers
 LOG_LEVEL = unicode( os.environ.get(u'ezb_ctl__LOG_LEVEL') )
