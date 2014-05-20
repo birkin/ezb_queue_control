@@ -26,21 +26,20 @@ class Monitor( object ):
         self._log_start_messages()
         result_dicts = self._query_new()
         self._log_check_result( result_dicts )
-        db_updater.update_check_result( result_dicts, self.file_logger )
         return result_dicts
 
     def _log_start_messages( self ):
         """ Creates initial db-log-entry.
             Called by check_for_new() """
         db_log_message = u'QController session STARTING at %s; checking for request record...' % unicode( datetime.datetime.now() )
-        self.db_logger.update_log( message=db_log_message, message_importance=u'high' )
         self.file_logger.info( db_log_message )
+        self.db_logger.update_log( message=db_log_message, message_importance=u'high' )
         return
 
     def _query_new( self ):
         """ Sends request to db-proxy for json data.
             Returns empty or populated list of result-dicts. """
-        r = requests.get( settings.NEW_CHECK_URL, auth=(settings.NEW_CHECK_USERNAME, settings.NEW_CHECK_PASSWORD) )
+        r = requests.get( settings.NEW_CHECK_URL, auth=(settings.DB_PRX_USERNAME, settings.DB_PRX_PASSWORD) )
         status_dict = {  # temp, for debugging
             u'settings.NEW_CHECK_URL': settings.NEW_CHECK_URL,
             u'r.content': r.content.decode( u'utf-8' ),
@@ -76,7 +75,7 @@ def run_check_for_new():
     if result_dicts:
         for result_dict in result_dicts:
             data = { u'db_id': result_dict[u'db_id'], u'status': u'in_process' }
-            db_updater.update_request_status( data=data, file_logger=file_logger )
+            db_updater.update_request_status( data=data, file_logger=file_logger )  # done here instead of as separate job to minimize chance of multiple-processing
             q.enqueue_call( func=u'ezb_queue_control.tasks.db_updater.update_history_note', kwargs={ u'found_data': result_dict, u'request_id': result_dict[u'db_id'] }, timeout=30 )  # always check for new
     return
 
@@ -119,7 +118,7 @@ def run_check_for_new():
 # def _query_new( file_logger ):
 #     """ Sends request to db-proxy for json data.
 #         Returns empty or populated result-dict. """
-#     r = requests.get( settings.NEW_CHECK_URL, auth=(settings.NEW_CHECK_USERNAME, settings.NEW_CHECK_PASSWORD) )
+#     r = requests.get( settings.NEW_CHECK_URL, auth=(settings.DB_PRX_USERNAME, settings.DB_PRX_PASSWORD) )
 #     status_dict = {  # temp, for debugging
 #         u'settings.NEW_CHECK_URL': settings.NEW_CHECK_URL,
 #         u'r.content': r.content.decode( u'utf-8' ),
