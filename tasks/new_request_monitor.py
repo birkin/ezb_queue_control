@@ -5,9 +5,10 @@
 
 import datetime, os, pprint, sys, time
 import redis, requests, rq
-from ezb_queue_control.config import settings
 from ezb_queue_control.common import ezb_logger, utility_code
-from ezb_queue_control.tasks import db_updater, task_manager
+from ezb_queue_control.common.db_updater import DbUpdater
+from ezb_queue_control.config import settings
+from ezb_queue_control.tasks import task_manager
 
 
 class Monitor( object ):
@@ -71,11 +72,12 @@ def run_check_for_new():
     file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_PATH, settings.LOG_LEVEL )
     db_logger = ezb_logger.setup_db_logger( settings.DB_LOG_URL, settings.DB_LOG_URL_KEY, settings.LOG_LEVEL, file_logger )
     monitor = Monitor( file_logger, db_logger )
+    db_updater = DbUpdater( file_logger )
     result_dicts = monitor.check_for_new()
     if result_dicts:
         for result_dict in result_dicts:
-            data = { u'db_id': result_dict[u'db_id'], u'status': u'in_process' }
-            db_updater.update_request_status( data=data, file_logger=file_logger )  # done here instead of as separate job to minimize chance of multiple-processing
+            update_data = { u'db_id': result_dict[u'db_id'], u'status': u'in_process' }
+            db_updater.update_request_status( data=update_data )  # done here instead of as separate job to minimize chance of multiple-processing
             q.enqueue_call( func=u'ezb_queue_control.tasks.db_updater.update_history_note', kwargs={ u'found_data': result_dict, u'request_id': result_dict[u'db_id'] }, timeout=30 )  # always check for new
     return
 

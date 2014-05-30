@@ -2,7 +2,8 @@
 
 """ Handles updates to Request and History tables. """
 
-import sys
+import pprint, sys
+import requests
 from ezb_queue_control.common import ezb_logger
 from ezb_queue_control.config import settings
 from ezb_queue_control.tasks import task_manager
@@ -15,13 +16,20 @@ class DbUpdater( object ):
         """ Holds state. """
         self.file_logger = file_logger
 
-    def update_request_status( data=None, file_logger=None ):
+    def update_request_status( self, data ):
         """ Not a task.
             Updates request status.
             Called _by_ task, so file_logger is passed in. """
-        #TODO - implement
-        #TODO - if not a task, move function out of tasks
-        1/0
+        assert sorted( data.keys() ) == [ u'db_id', u'status' ]
+        payload = { u'status': data[u'status'], u'db_id': data[u'db_id'] }
+        r = requests.post( settings.UPDATE_STATUS_URL, data=payload, auth=(settings.DB_PRX_USERNAME, settings.DB_PRX_PASSWORD) )
+
+        status_dict = {  # temp, for debugging
+            u'settings.NEW_CHECK_URL': settings.UPDATE_STATUS_URL,
+            u'r.content': r.content.decode( u'utf-8' ),
+            u'r.status_code': r.status_code }
+        self.file_logger.debug( u'in db_updater.update_request_status(); status_dict, %s' % pprint.pformat(status_dict) )
+
         return
 
     # end class DbUpdater()
