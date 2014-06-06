@@ -29,11 +29,21 @@ class DbUpdater( object ):
             u'r.content': r.content.decode( u'utf-8' ),
             u'r.status_code': r.status_code }
         self.file_logger.debug( u'in db_updater.update_request_status(); status_dict, %s' % pprint.pformat(status_dict) )
+        return
 
+    def make_initial_history_note( self ):
+        """ z """
+        pass
         return
 
     # end class DbUpdater()
 
+
+def run_make_initial_history_note( found_data, request_id ):
+    """ Task.
+        Triggered by tasks.new_request_monitor.run_check_for_new() """
+    pass
+    return
 
 
 # def update_history_note( data=None ):
