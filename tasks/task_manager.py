@@ -23,32 +23,32 @@ def determine_next_task( current_task, data=None, logger=None ):
         next_task = None
         logger.debug( u'in tasks.task_manager.determine_next_task(); current_task: %s' % current_task )
 
-        # if current_task == u'check_for_new':  # new_request_monitor.py
-        #     assert sorted( data.keys() ) == [ u'found_data', u'r_id' ], sorted( data.keys() )
-        #     if len( data['found_data'] ) > 0:
-        #         data[u'history_note_text'] = u'Processing started'
-        #         next_task = u'ezb_queue_control.tasks.db_updater.update_history_note'
+        if current_task == u'check_for_new':  # new_request_monitor.py
+            assert sorted( data.keys() ) == [ u'found_data', u'request_id' ], sorted( data.keys() )
+            next_task = u'ezb_queue_control.tasks.db_updater.run_make_initial_history_note'
 
-        if current_task == u'update_history_note':  # db_updater.py
-            assert u'history_note_text' in data.keys(), u'expected key history_note_text not found'
-            if data[u'history_note_text'] == u'Processing started':  # new_request_monitor.py
-                del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'found_data', u'r_id' ]
-                next_task = u'ezb_queue_control.tasks.task_manager.determine_flow'
-            elif data[u'history_note_text'] == u'no_valid_bd_string':  # caller_bd.prepare_bd_request_data() failed on string-search
-                del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'flow', u'found_data', u'r_id' ]
-                position = data[u'flow'].index( u'bd' )
-                next_in_flow = data[u'flow'][position + 1]
-                if next_in_flow == u'illiad':
-                    next_task = u'ezb_queue_control.tasks.caller_ill.prepare_illiad_request_data'
+        if current_task == u'run_make_initial_history_note':  # db_updater.py
+            assert sorted( data.keys() ) == [ u'found_data', u'request_id' ], sorted( data.keys() )
+            next_task = u'ezb_queue_control.tasks.task_manager.determine_flow'
+
+        # if current_task == u'update_history_note':  # db_updater.py
+        #     assert u'history_note_text' in data.keys(), u'expected key history_note_text not found'
+        #     if data[u'history_note_text'] == u'Processing started':  # new_request_monitor.py
+        #         del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'found_data', u'r_id' ]
+        #         next_task = u'ezb_queue_control.tasks.task_manager.determine_flow'
+        #     elif data[u'history_note_text'] == u'no_valid_bd_string':  # caller_bd.prepare_bd_request_data() failed on string-search
+        #         del( data[u'history_note_text'] ); assert sorted( data.keys() ) == [ u'flow', u'found_data', u'r_id' ]
+        #         position = data[u'flow'].index( u'bd' )
+        #         next_in_flow = data[u'flow'][position + 1]
+        #         if next_in_flow == u'illiad':
+        #             next_task = u'ezb_queue_control.tasks.caller_ill.prepare_illiad_request_data'
 
         elif current_task == u'determine_flow':  # task_manager.py
             assert sorted( data.keys() ) == [u'flow', u'found_data', u'r_id'], sorted( data.keys() )
             if data[u'flow'][0] == u'bd':
                 next_task = u'ezb_queue_control.tasks.caller_bd.prepare_bd_request_data'
-            elif data[u'flow'][0] == u'illiad':
-                next_task = u'ezb_queue_control.tasks.tunneler_runners.run_illiad'
             else:
-                next_task = u'ezb_queue_control.tasks.tunneler_runners.run_inrhode'  # not possible as of 2014-01, but determine_flow() can change based on policy.
+                next_task = u'ezb_queue_control.tasks.caller_ill.run_illiad'
 
         elif current_task == u'prepare_bd_request_data':  # caller_bd.py
             assert sorted( data.keys() ) == [ u'bd_caller_data', u'flow', u'found_data', u'r_id' ], sorted( data.keys() )
