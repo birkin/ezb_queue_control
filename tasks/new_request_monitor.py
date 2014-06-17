@@ -68,7 +68,7 @@ def run_check_for_new():
     """ Caller for Monitor.check_for_new().
         Triggered by start.py
         Note: aside from start.py, this is the only task which itself puts a new job on the queue. """
-    ( monitor, db_updater, q ) = _initialize()
+    ( file_logger, monitor, db_updater, q ) = _initialize()
     result_dicts = monitor.check_for_new()
     if result_dicts:
         for result_dict in result_dicts:
@@ -88,4 +88,4 @@ def _initialize():
     db_logger = ezb_logger.setup_db_logger(settings.DB_LOG_URL, settings.DB_LOG_URL_KEY, settings.LOG_LEVEL, file_logger)
     monitor = Monitor( file_logger, db_logger )
     db_updater = DbUpdater( file_logger )
-    return ( monitor, db_updater, q )
+    return ( file_logger, monitor, db_updater, q )

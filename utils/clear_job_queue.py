@@ -2,7 +2,6 @@
 
 """ Clear out target job queue.
     Useful for experimenting with rq & redis, starting queue from scratch.
-    TODO: functionize to take target-queue as parameter
     """
 
 import os, pprint, sys

@@ -43,7 +43,7 @@ class DbUpdater( object ):
     # end class DbUpdater()
 
 
-def run_make_initial_history_note( found_data, request_id ):
+def run_make_initial_history_note( data ):
     """ Task.
         Triggered by tasks.new_request_monitor.run_check_for_new() """
     assert sorted( data.keys() ) == [ u'found_data', u'request_id' ]
@@ -55,43 +55,3 @@ def run_make_initial_history_note( found_data, request_id ):
         data={ u'found_data': data[u'found_data'], u'request_id': data[u'request_id'] },
         logger=file_logger )
     return
-
-
-
-
-# def update_bd_history_status( data ):
-#     """ Task.
-#         Updates history table with bd attempt result. """
-#     assert sorted( data.keys() ) == [ u'bd_tunneler_response', u'flow', u'found_data', u'r_id' ], sorted( data.keys() )
-#     ( file_logger, db_handler_instance ) = _setup_logger_and_dbhandler()
-#     history_status = _determine_bd_history_status( data[u'bd_tunneler_response'] )
-#     #TODO
-#     return
-
-# def _determine_bd_history_status( bd_tunneler_response_dict ):
-#     """ Helper.
-#         Returns history_status info.
-#         Called by update_bd_history_status(). """
-#     history_status = {}
-#     if len( bd_tunneler_response_dict[u'bd_confirmation_code'] ) > 0:  # success!
-#         ( history_status[u'result'], history_status[u'number'] ) = ( u'Request_Successful', data[u'bd_tunneler_response'][u'bd_confirmation_code'] )
-#     elif bd_tunneler_response_dict[u'found'] == False:
-#         ( history_status[u'result'], history_status[u'number'] ) = ( u'not_found', u'not_applicable' )
-#     elif bd_tunneler_response_dict[u'found'] == True and bd_tunneler_response_dict[u'requestable'] == False:
-#         ( history_status[u'result'], history_status[u'number'] ) = ( u'not_requestable', u'not_applicable' )
-#     else:
-#         ( history_status[u'result'], history_status[u'number'] ) = ( u'could_not_process', u'not_applicable' )
-#     return history_status
-
-
-# ## General helpers ##
-
-
-# def _setup_logger_and_dbhandler():
-#     """ Helper.
-#         Returns file_logger and db_handler_instance.
-#         Called by task update_history_note(), and task update_bd_history_status() """
-#     #TODO- this will no longer work with non-sql code; fix.
-#     file_logger = ezb_logger.setup_file_logger( settings.FILE_LOG_PATH, settings.LOG_LEVEL )
-#     db_handler_instance = db_handler.get_db_handler( file_logger )
-#     return ( file_logger, db_handler_instance )

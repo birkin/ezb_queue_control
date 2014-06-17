@@ -23,7 +23,7 @@ def determine_next_task( current_task, data=None, logger=None ):
         next_task = None
         logger.debug( u'in tasks.task_manager.determine_next_task(); current_task: %s' % current_task )
 
-        if current_task == u'check_for_new':  # new_request_monitor.py
+        if current_task == u'run_check_for_new':  # new_request_monitor.py
             assert sorted( data.keys() ) == [ u'found_data', u'request_id' ], sorted( data.keys() )
             next_task = u'ezb_queue_control.tasks.db_updater.run_make_initial_history_note'
 

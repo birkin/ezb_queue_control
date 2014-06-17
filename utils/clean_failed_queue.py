@@ -3,7 +3,6 @@
 """ Cleans up default rq failed-queue.
     Only cleans up jobs from a target queue.
     Useful for experimenting with rq & redis, while also indulging ocd tendencies.
-    TODO: functionize to take target-queue as parameter
     """
 
 import os, pprint, sys
