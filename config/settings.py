@@ -23,7 +23,7 @@ LOG_LEVEL = unicode( os.environ[u'ezb_ctl__LOG_LEVEL'] )
 BD_API_URL = unicode( os.environ[u'ezb_ctl__BD_API_URL'] )  # task_manager.py -- TODO: use this from caller_bd.py
 BD_API_AUTHORIZATION_CODE = unicode( os.environ[u'ezb_ctl__BD_API_AUTHORIZATION_CODE'] )
 BD_API_IDENTITY = unicode( os.environ[u'ezb_ctl__BD_API_IDENTITY'] )
-BD_API_UNIVERSITY = unicode( os.environ[u'ezb_ctl__BD_API_UNIVERSITY'] )
+BD_UNIVERSITY = unicode( os.environ[u'ezb_ctl__BD_UNIVERSITY'] )
 
 ## illiad
 # os.environ calls made directly from tasks/caller_ill.py
@@ -31,4 +31,4 @@ BD_API_UNIVERSITY = unicode( os.environ[u'ezb_ctl__BD_API_UNIVERSITY'] )
 ## general
 OPENURL_PARSER_URL = unicode( os.environ[u'ezb_ctl__OPENURL_PARSER_URL'] )
 QUEUE_NAME = unicode( os.environ[u'ezb_ctl__QUEUE_NAME'] )  # new_request_monitor.py, start.py, task_manager.py
-NEW_CHECK_FREQUENCY = int( unicode(os.environ[u'ezb_ctl__NEW_CHECK_FREQUENCY')] )  # new_request_monitor.py; used for time.sleep( seconds )
+NEW_CHECK_FREQUENCY = int( unicode(os.environ[u'ezb_ctl__NEW_CHECK_FREQUENCY']) )  # new_request_monitor.py; used for time.sleep( seconds )
